@@ -91,3 +91,18 @@ if __name__ == "__main__":
     while True:
         bot.ejecutar()
         time.sleep(1800)
+import telepot
+from telepot.loop import MessageLoop
+
+# ... dentro de tu clase CazadorPro o justo antes del if __name__ == "__main__": ...
+
+def handle(msg):
+    chat_id = msg['chat']['id']
+    comando = msg.get('text')
+    if comando == '/start':
+        bot.sendMessage(chat_id, "¡Hola! Estoy listo para escanear.")
+
+# Al final, justo antes de tu bucle 'while True':
+bot = telepot.Bot("TU_TOKEN_AQUI")
+MessageLoop(bot, handle).run_as_thread()
+print("🤖 Telegram escuchando...", flush=True)

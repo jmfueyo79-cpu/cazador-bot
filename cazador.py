@@ -1,4 +1,4 @@
-import os
+8import os
 import threading
 from flask import Flask
 from time import sleep
@@ -103,6 +103,6 @@ def handle(msg):
         bot.sendMessage(chat_id, "¡Hola! Estoy listo para escanear.")
 
 # Al final, justo antes de tu bucle 'while True':
-bot = telepot.Bot("TU_TOKEN_AQUI")
+bot = telepot.Bot("2047038250")
 MessageLoop(bot, handle).run_as_thread()
 print("🤖 Telegram escuchando...", flush=True)

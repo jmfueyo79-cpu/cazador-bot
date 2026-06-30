@@ -1,3 +1,30 @@
+import os
+import threading
+from flask import Flask
+from time import sleep
+
+# --- SERVIDOR PARA EVITAR ERROR EN RENDER ---
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot activo"
+
+def run_web():
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
+
+# Iniciamos el servidor web en segundo plano
+threading.Thread(target=run_web, daemon=True).start()
+# ---------------------------------------------
+
+# --- A PARTIR DE AQUÍ VA TU CÓDIGO ORIGINAL ---
+# (Pega aquí debajo toda la lógica de tu Cazador Pro)
+
+print("🤖 BOT INICIADO: Escaneando...", flush=True)
+
+# ... resto de tu código ...
+
 import yfinance as yf
 import json, os, time
 

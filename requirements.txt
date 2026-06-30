@@ -3,3 +3,5 @@ pandas
 telepot
 edgartools
 flask
+yahoo_fin
+requests_html

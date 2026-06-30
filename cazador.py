@@ -1,5 +1,4 @@
-
-                 import os
+import os
 import threading
 import time
 import json
@@ -93,4 +92,4 @@ if __name__ == "__main__":
     while True:
         cazador.ejecutar()
         time.sleep(1800) # Espera 30 minutos
-   
+

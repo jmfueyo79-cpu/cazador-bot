@@ -18,24 +18,29 @@ NY_TIMEZONE = pytz.timezone('America/New_York')
 app = Flask(__name__)
 @app.route('/')
 def home(): return "Bot Francotirador Activo"
-threading.Thread(target=lambda: app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000))), daemon=True).start()
 
 class CazadorPro:
     def __init__(self):
         self.bot = telepot.Bot(TELEGRAM_TOKEN)
         self.trailing_pct = 0.20
         self.posiciones = {}
+        # Llamada al método definido dentro de la clase
         self.enviar_telegram("🎯 BOT LISTO: Modo Francotirador Activo (Horario NY)")
+
+    def enviar_telegram(self, msg):
+        try:
+            self.bot.sendMessage(TELEGRAM_CHAT_ID, msg)
+        except Exception as e:
+            print(f"Error enviando telegram: {e}")
 
     def es_horario_operativo(self):
         now = datetime.now(NY_TIMEZONE)
-        # Laborales, y entre 10:00 AM y 3:55 PM (cierre anticipado de escaneo)
         es_laboral = now.weekday() < 5
         apertura_valida = (now.hour == 9 and now.minute >= 59) or (now.hour >= 10 and now.hour < 16)
         return es_laboral and apertura_valida
 
     def ejecutar(self):
-        # 1. SEGUIMIENTO (Siempre activo)
+        # 1. SEGUIMIENTO
         for ticker, datos in list(self.posiciones.items()):
             try:
                 stock = yf.Ticker(ticker)
@@ -54,7 +59,7 @@ class CazadorPro:
                     self.enviar_telegram(f"📈 SEGUIMIENTO: {ticker}\nPrecio: ${precio_actual:.2f}\nBeneficio: {beneficio:.2f}%\nNuevo SL: ${datos['sl']:.2f}")
             except: continue
 
-        # 2. ESCÁNER (Solo horario operativo)
+        # 2. ESCÁNER
         if not self.es_horario_operativo(): return
 
         try:
@@ -69,7 +74,6 @@ class CazadorPro:
                 precio_actual = hist['Close'].iloc[-1]
                 precio_apertura = hist['Open'].iloc[-1]
                 
-                # Filtro Anti-Gap: Max 3% respecto al cierre anterior
                 if abs((precio_apertura - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) > 0.03: continue
                 if not (2.00 <= precio_actual <= 20.00): continue
                 
@@ -83,7 +87,11 @@ class CazadorPro:
         except: pass
 
 if __name__ == "__main__":
+    # Arrancar Flask en un hilo
+    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000))), daemon=True).start()
+    
     cazador = CazadorPro()
     while True:
         cazador.ejecutar()
-        time.sleep(300) # Chequeo cada 5 minutos durante la sesión
+        time.sleep(300)
+                    

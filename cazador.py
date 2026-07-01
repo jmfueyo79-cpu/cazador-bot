@@ -20,10 +20,10 @@ threading.Thread(target=lambda: app.run(host='0.0.0.0', port=int(os.environ.get(
 class CazadorPro:
     def __init__(self):
         self.bot = telepot.Bot(TELEGRAM_TOKEN)
-        # Aumentamos el trailing al 15% para permitir mayor recorrido hacia el 50%
+        # Trailing al 15% para dar margen a subidas del 50%
         self.trailing_pct = 0.15 
         self.posiciones = {}
-        self.enviar_telegram("🚀 BOT INICIADO: Cazador de Explosivas Activo")
+        self.enviar_telegram("🚀 BOT INICIADO: Cazador de Explosivas (Muestreo: 200)")
 
     def enviar_telegram(self, msg):
         try: self.bot.sendMessage(TELEGRAM_CHAT_ID, msg)
@@ -49,10 +49,10 @@ class CazadorPro:
                     self.enviar_telegram(f"📈 SEGUIMIENTO: {ticker}\nPrecio Actual: ${precio_actual:.2f}\nBeneficio: {beneficio:.2f}%\nNuevo SL Dinámico: ${datos['sl']:.2f}")
             except: continue
 
-        # 2. ESCÁNER DE ALTO POTENCIAL
+        # 2. ESCÁNER DE ALTO POTENCIAL (Muestra de 200)
         try:
-            # Escaneamos 50 aleatorias del NASDAQ cada ciclo
-            muestra = random.sample(si.tickers_nasdaq(), 50)
+            # Seleccionamos 200 aleatorias del NASDAQ
+            muestra = random.sample(si.tickers_nasdaq(), 200)
             for ticker in muestra:
                 if ticker in self.posiciones: continue
                 
@@ -77,3 +77,4 @@ if __name__ == "__main__":
         cazador.ejecutar()
         # Escaneo cada 30 minutos
         time.sleep(1800)
+                

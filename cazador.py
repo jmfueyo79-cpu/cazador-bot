@@ -20,17 +20,16 @@ threading.Thread(target=lambda: app.run(host='0.0.0.0', port=int(os.environ.get(
 class CazadorPro:
     def __init__(self):
         self.bot = telepot.Bot(TELEGRAM_TOKEN)
-        # Trailing al 15% para dar margen a subidas del 50%
         self.trailing_pct = 0.15 
         self.posiciones = {}
-        self.enviar_telegram("🚀 BOT INICIADO: Cazador de Explosivas (Muestreo: 200)")
+        self.enviar_telegram("🚀 BOT INICIADO: Cazador de Explosivas (Muestreo: 500)")
 
     def enviar_telegram(self, msg):
         try: self.bot.sendMessage(TELEGRAM_CHAT_ID, msg)
         except: pass
 
     def ejecutar(self):
-        # 1. SEGUIMIENTO (Trailing Stop Dinámico)
+        # 1. SEGUIMIENTO
         for ticker, datos in list(self.posiciones.items()):
             try:
                 stock = yf.Ticker(ticker)
@@ -49,24 +48,29 @@ class CazadorPro:
                     self.enviar_telegram(f"📈 SEGUIMIENTO: {ticker}\nPrecio Actual: ${precio_actual:.2f}\nBeneficio: {beneficio:.2f}%\nNuevo SL Dinámico: ${datos['sl']:.2f}")
             except: continue
 
-        # 2. ESCÁNER DE ALTO POTENCIAL (Muestra de 200)
+        # 2. ESCÁNER DE ALTO POTENCIAL (Muestra de 500)
         try:
-            # Seleccionamos 200 aleatorias del NASDAQ
-            muestra = random.sample(si.tickers_nasdaq(), 200)
+            # Seleccionamos 500 aleatorias del NASDAQ
+            muestra = random.sample(si.tickers_nasdaq(), 500)
             for ticker in muestra:
                 if ticker in self.posiciones: continue
                 
                 stock = yf.Ticker(ticker)
-                hist = stock.history(period="30d")
+                hist = stock.history(period="365d")
                 if len(hist) < 30: continue
                 
                 precio = hist['Close'].iloc[-1]
+                max_anual = hist['Close'].max()
                 vol_actual = hist['Volume'].iloc[-1]
-                vol_promedio = hist['Volume'].iloc[:-1].mean()
+                vol_promedio = hist['Volume'].iloc[-30:-1].mean()
                 cambio_5d = ((precio - hist['Close'].iloc[-5]) / hist['Close'].iloc[-5]) * 100
                 
-                # FILTROS: Precio < 20$, Volumen x3, Momentum 5d > 2%
-                if precio <= 20.00 and (vol_actual / vol_promedio) > 3.0 and cambio_5d > 2.0:
+                # FILTROS: Precio < 20$, Volumen x3, Momentum 5d > 2%, Espacio de subida > 30%
+                if (precio <= 20.00 and 
+                    (vol_actual / vol_promedio) > 3.0 and 
+                    cambio_5d > 2.0 and 
+                    precio < (max_anual * 0.7)):
+                    
                     self.posiciones[ticker] = {'entrada': precio, 'sl': precio * (1 - self.trailing_pct)}
                     self.enviar_telegram(f"🔥 NUEVA EXPLOSIVA: {ticker}\nPrecio: ${precio:.2f}\nSubida 5d: {cambio_5d:.2f}%\nSL Inicial: ${self.posiciones[ticker]['sl']:.2f}")
         except: pass
